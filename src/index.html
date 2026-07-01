@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>408刷题助手</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ===== 首页 ===== -->
+  <div id="home-view" class="view active">
+    <header class="home-header">
+      <h1>408 刷题助手</h1>
+      <div class="mode-switch">
+        <button class="mode-btn active" data-mode="all">全部</button>
+        <button class="mode-btn" data-mode="choice">仅选择</button>
+        <button class="mode-btn" data-mode="big">仅大题</button>
+      </div>
+    </header>
+
+    <div class="subject-grid" id="subject-grid"></div>
+    <div class="chapter-select" id="chapter-select"></div>
+
+    <div class="home-stats" id="home-stats"></div>
+    <div class="today-stats" id="today-stats"></div>
+
+    <div class="home-actions" id="home-actions">
+      <button class="btn-primary" id="btn-random">开始刷题</button>
+      <div class="home-actions-row">
+        <button class="btn-secondary" id="btn-review">错题本</button>
+        <button class="btn-secondary" id="btn-learned">已学过</button>
+        <button class="btn-secondary" id="btn-fav">收藏</button>
+      </div>
+      <div class="home-actions-row">
+        <button class="btn-secondary btn-sm" id="btn-stats">统计</button>
+        <button class="btn-secondary btn-sm" id="btn-export">导出</button>
+        <button class="btn-secondary btn-sm" id="btn-import">导入</button>
+        <button class="btn-secondary btn-sm" id="btn-pin" title="窗口置顶">置顶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 答题页 ===== -->
+  <div id="quiz-view" class="view">
+    <header class="quiz-header">
+      <button class="btn-back" id="btn-quiz-back">← 返回</button>
+      <span class="quiz-meta" id="quiz-meta"></span>
+      <span class="quiz-progress" id="quiz-progress"></span>
+      <button class="btn-fav" id="btn-fav-toggle" title="收藏">☆</button>
+    </header>
+    <div class="quiz-body" id="quiz-body"></div>
+    <div class="quiz-hint">键盘: A/B/C/D 作答 · Enter 下一题 · Esc 返回</div>
+  </div>
+
+  <!-- ===== 错题本 ===== -->
+  <div id="review-view" class="view">
+    <header class="quiz-header">
+      <button class="btn-back" id="btn-review-back">← 返回</button>
+      <span class="quiz-meta">错题本</span>
+    </header>
+    <div class="review-filter" id="review-filter"></div>
+    <div class="review-filter" id="review-chapter-filter" style="display:none"></div>
+    <div class="review-batch" id="review-batch" style="display:none"></div>
+    <div class="review-list" id="review-list"></div>
+    <div class="review-empty" id="review-empty" style="display:none;">暂无错题，继续加油</div>
+  </div>
+
+  <!-- ===== 已学过 ===== -->
+  <div id="learned-view" class="view">
+    <header class="quiz-header">
+      <button class="btn-back" id="btn-learned-back">← 返回</button>
+      <span class="quiz-meta">已学过</span>
+    </header>
+    <div class="review-filter" id="learned-filter"></div>
+    <div class="review-filter" id="learned-chapter-filter" style="display:none"></div>
+    <div class="review-list" id="learned-list"></div>
+    <div class="review-empty" id="learned-empty" style="display:none;">还没有学过的题目，快去刷题吧</div>
+  </div>
+
+  <!-- ===== 收藏 ===== -->
+  <div id="fav-view" class="view">
+    <header class="quiz-header">
+      <button class="btn-back" id="btn-fav-back">← 返回</button>
+      <span class="quiz-meta">收藏</span>
+    </header>
+    <div class="review-filter" id="fav-filter"></div>
+    <div class="review-filter" id="fav-chapter-filter" style="display:none"></div>
+    <div class="review-list" id="fav-list"></div>
+    <div class="review-empty" id="fav-empty" style="display:none;">还没有收藏的题目</div>
+  </div>
+
+  <!-- ===== 统计面板 ===== -->
+  <div id="stats-view" class="view">
+    <header class="quiz-header">
+      <button class="btn-back" id="btn-stats-back">← 返回</button>
+      <span class="quiz-meta">学习统计</span>
+    </header>
+    <div class="stats-body" id="stats-body"></div>
+  </div>
+
+  <!-- 模块脚本（按依赖顺序加载） -->
+  <script src="js/state.js"></script>
+  <script src="js/book-manager.js"></script>
+  <script src="js/stat-manager.js"></script>
+  <script src="js/note-manager.js"></script>
+  <script src="js/key-handler.js"></script>
+  <script src="js/ui-renderer.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

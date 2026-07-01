@@ -1,0 +1,32 @@
+{
+  "name": "408-app",
+  "version": "1.0.0",
+  "description": "408 考研刷题助手 · 操作系统 / 计组 / 计网 / 数据结构",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:dir": "electron-builder --dir"
+  },
+  "build": {
+    "appId": "com.exam408.app",
+    "productName": "408刷题助手",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": false
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "data/**/*"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^42.5.0",
+    "electron-builder": "^25.0.0"
+  }
+}
