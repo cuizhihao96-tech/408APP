@@ -58,12 +58,17 @@
     document.getElementById('btn-import').onclick = window.importAllData;
 
     var pinBtn = document.getElementById('btn-pin');
-    pinBtn.textContent = window.isPinned ? '取消置顶' : '置顶';
-    pinBtn.onclick = function() {
-      window.isPinned = !window.isPinned;
-      window.appAPI.setAlwaysOnTop(window.isPinned);
+    if (window.appAPI && window.appAPI.setAlwaysOnTop) {
       pinBtn.textContent = window.isPinned ? '取消置顶' : '置顶';
-    };
+      pinBtn.onclick = function() {
+        window.isPinned = !window.isPinned;
+        window.appAPI.setAlwaysOnTop(window.isPinned);
+        pinBtn.textContent = window.isPinned ? '取消置顶' : '置顶';
+      };
+    } else {
+      // Web 模式：置顶不适用，隐藏按钮
+      pinBtn.style.display = 'none';
+    }
   }
 
   // ========== 章节选择 ==========

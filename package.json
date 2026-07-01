@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "build:dir": "electron-builder --dir"
+    "build:dir": "electron-builder --dir",
+    "build:web": "node build-web.js"
   },
   "build": {
     "appId": "com.exam408.app",

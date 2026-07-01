@@ -108,8 +108,8 @@
     body.innerHTML = html;
   }
 
-  async function exportAllData() {
-    var data = {
+  function makeExportData() {
+    return {
       version: 3,
       exportDate: new Date().toISOString(),
       wrongIds: Array.from(wrongIds),
@@ -118,47 +118,97 @@
       progress: progress,
       dailyLog: dailyLog,
     };
-    var result = await window.appAPI.showSaveDialog({
-      title: '导出学习数据',
-      defaultPath: '408-backup-' + new Date().toISOString().slice(0,10) + '.json',
-      filters: [{ name: 'JSON', extensions: ['json'] }]
-    });
-    if (result.canceled || !result.filePath) return;
-    var ok = await window.appAPI.exportData(result.filePath, data);
-    window.showToast(ok ? '导出成功！' : '导出失败', ok ? '' : 'error');
+  }
+
+  function applyImportData(data) {
+    window.wrongIds = new Set(data.wrongIds || []);
+    window.learnedIds = new Set(data.learnedIds || []);
+    window.favIds = new Set(data.favIds || []);
+    window.progress = data.progress || {};
+    window.dailyLog = data.dailyLog || {};
+    wrongIds = window.wrongIds;
+    learnedIds = window.learnedIds;
+    favIds = window.favIds;
+    progress = window.progress;
+    dailyLog = window.dailyLog;
+    window.saveWrong(); window.saveLearned(); window.saveFav(); window.saveProgress(); window.saveDailyLog();
+    window.showToast('导入成功！');
+    window.renderHome();
+  }
+
+  async function exportAllData() {
+    var data = makeExportData();
+    if (window.appAPI && window.appAPI.showSaveDialog) {
+      var result = await window.appAPI.showSaveDialog({
+        title: '导出学习数据',
+        defaultPath: '408-backup-' + new Date().toISOString().slice(0,10) + '.json',
+        filters: [{ name: 'JSON', extensions: ['json'] }]
+      });
+      if (result.canceled || !result.filePath) return;
+      var ok = await window.appAPI.exportData(result.filePath, data);
+      window.showToast(ok ? '导出成功！' : '导出失败', ok ? '' : 'error');
+    } else {
+      // Web 模式：浏览器下载
+      var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = '408-backup-' + new Date().toISOString().slice(0,10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      window.showToast('导出成功！');
+    }
   }
 
   async function importAllData() {
-    var result = await window.appAPI.showOpenDialog({
-      title: '导入学习数据',
-      filters: [{ name: 'JSON', extensions: ['json'] }],
-      properties: ['openFile']
-    });
-    if (result.canceled || !result.filePaths || !result.filePaths.length) return;
-    var data = await window.appAPI.importData(result.filePaths[0]);
-    if (!data) { window.showToast('导入失败：无法读取文件', 'error'); return; }
-    if (!data.wrongIds && !data.learnedIds && !data.progress) {
-      window.showToast('文件格式不正确', 'error');
-      return;
-    }
-    window.showModal('导入数据',
-      '将导入以下数据：\n- 错题 ' + (data.wrongIds || []).length + ' 道\n- 已学 ' + (data.learnedIds || []).length + ' 道\n- 进度 ' + Object.keys(data.progress || {}).length + ' 科\n\n这会覆盖当前数据，确定继续？',
-      function() {
-        window.wrongIds = new Set(data.wrongIds || []);
-        window.learnedIds = new Set(data.learnedIds || []);
-        window.favIds = new Set(data.favIds || []);
-        window.progress = data.progress || {};
-        window.dailyLog = data.dailyLog || {};
-        wrongIds = window.wrongIds;
-        learnedIds = window.learnedIds;
-        favIds = window.favIds;
-        progress = window.progress;
-        dailyLog = window.dailyLog;
-        window.saveWrong(); window.saveLearned(); window.saveFav(); window.saveProgress(); window.saveDailyLog();
-        window.showToast('导入成功！');
-        window.renderHome();
+    if (window.appAPI && window.appAPI.showOpenDialog) {
+      var result = await window.appAPI.showOpenDialog({
+        title: '导入学习数据',
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+        properties: ['openFile']
+      });
+      if (result.canceled || !result.filePaths || !result.filePaths.length) return;
+      var rawData = await window.appAPI.importData(result.filePaths[0]);
+      if (!rawData) { window.showToast('导入失败：无法读取文件', 'error'); return; }
+      if (!rawData.wrongIds && !rawData.learnedIds && !rawData.progress) {
+        window.showToast('文件格式不正确', 'error');
+        return;
       }
-    );
+      window.showModal('导入数据',
+        '将导入以下数据：\n- 错题 ' + (rawData.wrongIds || []).length + ' 道\n- 已学 ' + (rawData.learnedIds || []).length + ' 道\n- 进度 ' + Object.keys(rawData.progress || {}).length + ' 科\n\n这会覆盖当前数据，确定继续？',
+        function() { applyImportData(rawData); }
+      );
+    } else {
+      // Web 模式：浏览器文件选择
+      var input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = function() {
+        var file = input.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            var rawData = JSON.parse(e.target.result);
+          } catch(ex) {
+            window.showToast('文件格式错误', 'error');
+            return;
+          }
+          if (!rawData.wrongIds && !rawData.learnedIds && !rawData.progress) {
+            window.showToast('文件格式不正确', 'error');
+            return;
+          }
+          window.showModal('导入数据',
+            '将导入以下数据：\n- 错题 ' + (rawData.wrongIds || []).length + ' 道\n- 已学 ' + (rawData.learnedIds || []).length + ' 道\n- 进度 ' + Object.keys(rawData.progress || {}).length + ' 科\n\n这会覆盖当前数据，确定继续？',
+            function() { applyImportData(rawData); }
+          );
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
   }
 
   window.recordProgress = recordProgress;
